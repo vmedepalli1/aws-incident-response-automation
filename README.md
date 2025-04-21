@@ -3,7 +3,7 @@
 This project demonstrates a security automation framework on AWS that detects threats using GuardDuty and responds automatically using Lambda functions. It integrates services like Security Hub, Config, CloudTrail, CloudWatch, and SNS for comprehensive incident handling.
 
 ## 🧱 Architecture
-![Architecture](architecture/incident-response-architecture.png)
+
 
 ## 🛠️ Services Used
 - Amazon GuardDuty
