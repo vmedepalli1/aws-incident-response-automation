@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: SNS Topic and Email Subscription for Incident Alerts
+
+Parameters:
+  EmailAddress:
+    Type: String
+    Description: Email address to subscribe to the SNS topic
+
+Resources:
+  IncidentAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: incident-alerts
+
+  IncidentAlertsSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref IncidentAlertsTopic
+      Protocol: email
+      Endpoint: !Ref EmailAddress
+
+Outputs:
+  SNSTopicArn:
+    Description: ARN of the SNS Topic
+    Value: !Ref IncidentAlertsTopic

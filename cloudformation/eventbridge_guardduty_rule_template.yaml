@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: EventBridge Rule for GuardDuty to trigger Lambda
+
+Parameters:
+  LambdaFunctionArn:
+    Type: String
+    Description: ARN of the Lambda function to invoke
+
+Resources:
+  GuardDutyEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: GuardDutyAutoRemediationRule
+      Description: Trigger Lambda on GuardDuty finding (severity >= 5, EC2-related)
+      EventPattern:
+        source:
+          - aws.guardduty
+        detail-type:
+          - GuardDuty Finding
+        detail:
+          severity:
+            - numeric: [">=", 5]
+          resource:
+            resourceType:
+              - Instance
+      Targets:
+        - Arn: !Ref LambdaFunctionArn
+          Id: TargetLambdaFunction
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref LambdaFunctionArn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt GuardDutyEventRule.Arn
+
+Outputs:
+  EventRuleName:
+    Description: Name of the EventBridge Rule
+    Value: !Ref GuardDutyEventRule

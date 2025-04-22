@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: IAM Role for Lambda to Stop EC2 Instances and Publish to SNS
+
+Resources:
+  LambdaIncidentResponderRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: LambdaIncidentResponderRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaResponderPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:StopInstances
+                  - ec2:DescribeInstances
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: "arn:aws:sns:*:*:incident-alerts"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+Outputs:
+  LambdaRoleArn:
+    Description: ARN of the IAM Role for Lambda
+    Value: !GetAtt LambdaIncidentResponderRole.Arn

@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lambda Function for EC2 Quarantine and SNS Alert
+
+Parameters:
+  LambdaRoleArn:
+    Type: String
+    Description: ARN of the IAM Role to assign to the Lambda function
+  SnsTopicArn:
+    Type: String
+    Description: ARN of the SNS topic to publish alerts
+
+Resources:
+  QuarantineEC2Lambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: quarantineEC2Instance
+      Runtime: python3.9
+      Role: !Ref LambdaRoleArn
+      Handler: index.lambda_handler
+      Timeout: 10
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+
+          ec2 = boto3.client('ec2')
+          sns = boto3.client('sns')
+
+          def lambda_handler(event, context):
+              try:
+                  instance_id = event['detail']['resource']['instanceDetails']['instanceId']
+                  region = event['region']
+                  
+                  ec2.stop_instances(InstanceIds=[instance_id])
+                  
+                  message = f"GuardDuty finding detected! EC2 instance {instance_id} has been stopped in region {region}."
+                  sns.publish(
+                      TopicArn='${SnsTopicArn}',
+                      Subject="EC2 Quarantine Alert",
+                      Message=message
+                  )
+                  
+                  return {
+                      'statusCode': 200,
+                      'body': json.dumps(f"Remediation executed. Stopped {instance_id}")
+                  }
+              except Exception as e:
+                  print("Error:", str(e))
+                  return {
+                      'statusCode': 500,
+                      'body': json.dumps('Error processing the finding')
+                  }
+Outputs:
+  LambdaFunctionName:
+    Description: Name of the Lambda function created
+    Value: !Ref QuarantineEC2Lambda
