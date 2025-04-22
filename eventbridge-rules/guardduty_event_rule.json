@@ -1,0 +1,23 @@
+{
+  "source": [
+    "aws.guardduty"
+  ],
+  "detail-type": [
+    "GuardDuty Finding"
+  ],
+  "detail": {
+    "severity": [
+      {
+        "numeric": [
+          ">=",
+          5
+        ]
+      }
+    ],
+    "resource": {
+      "resourceType": [
+        "Instance"
+      ]
+    }
+  }
+}
